@@ -1,6 +1,6 @@
 {
   "name": "content-localizer",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A CLI tool for translating files contents at a specific folder path.",
   "keywords": [
     "content localization",
@@ -12,6 +12,10 @@
     "site localization",
     "VitePress translation"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TakasiVenkataSandeep-08/content-localizer"
+  },
   "main": "translator.js",
   "bin": {
     "content-localizer": "./translator.js"

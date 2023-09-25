@@ -31,7 +31,7 @@ content-localizer --source [sourcePath] --locales [locale1,locale2] --fileType [
 ## Example:
 
 ```bash
-content-localizer --source en --locales "no,sw" --fileType .md
+content-localizer --source "en" --locales "no,sw" --fileType .md
 
 ```
 
