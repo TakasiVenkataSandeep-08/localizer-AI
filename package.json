@@ -1,0 +1,27 @@
+{
+  "name": "content-localizer",
+  "version": "1.0.0",
+  "description": "A CLI tool for translating files contents at a specific folder path.",
+  "keywords": [
+    "content localization",
+    "translation tool",
+    "VitePress localization",
+    "markdown translation",
+    "multilingual content",
+    "content management",
+    "site localization",
+    "VitePress translation"
+  ],
+  "main": "translator.js",
+  "bin": {
+    "content-localizer": "./translator.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Takasi Venkata Sandeep",
+  "license": "MIT",
+  "dependencies": {
+    "free-translate": "^0.6.1"
+  }
+}
