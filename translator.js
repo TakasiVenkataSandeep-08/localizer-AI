@@ -133,13 +133,13 @@ async function replicateFiles(sourcePath, locales, fileTypes, from) {
         }
       })
     );
-    locales.forEach((locale) => {
-      spinner.setLocaleStatus(locale, localeSuccess[locale] ? "✅" : "❌");
-    });
-    spinner.stopAndPersist(); // Show final status for all locales
   }
 
-  replicateFolder(sourcePath, "");
+  await replicateFolder(sourcePath, "");
+  locales.forEach((locale) => {
+    spinner.setLocaleStatus(locale, localeSuccess[locale] ? "✅" : "❌");
+  });
+  spinner.stopAndPersist(); // Show final status for all locales
 }
 
 function main() {

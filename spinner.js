@@ -9,7 +9,7 @@ function createSpinner() {
   const localeStatus = {};
 
   return {
-    start: function () {
+    start() {
       interval = setInterval(() => {
         process.stdout.clearLine();
         process.stdout.cursorTo(0);
@@ -17,18 +17,19 @@ function createSpinner() {
         frame = (frame + 1) % frames.length;
       }, 100);
     },
-    setLocaleStatus: function (locale, status) {
+    setLocaleStatus(locale, status) {
       localeStatus[locale] = status;
     },
-    render: function () {
+    render() {
       process.stdout.clearLine();
       process.stdout.cursorTo(0);
+      process.stdout.write("Translation status:\n");
       const statusLines = Object.entries(localeStatus)
         .map(([locale, status]) => `${locale}: ${status}`)
         .join(" | ");
       process.stdout.write(statusLines);
     },
-    stopAndPersist: function () {
+    stopAndPersist() {
       clearInterval(interval);
       this.render();
       process.stdout.write("\n");
