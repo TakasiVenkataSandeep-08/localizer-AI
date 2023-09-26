@@ -33,6 +33,7 @@ function createSpinner() {
       clearInterval(interval);
       this.render();
       process.stdout.write("\n");
+      process.exit();
     },
   };
 }
