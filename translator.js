@@ -53,7 +53,7 @@ function parseCommandLineArgs() {
           .map((locale) => locale?.trim());
       }
     } else if (args[i] === "--from" && allowExtractArgs) {
-      options.from = args[i + 1]?.trim();
+      options.from = args[i + 1]?.trim() || "en";
     }
   }
 
