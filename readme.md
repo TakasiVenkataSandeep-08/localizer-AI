@@ -18,20 +18,21 @@ npm install -g content-localizer
 After installing the content-localizer CLI tool, you can run it from the command line as follows:
 
 ```bash
-content-localizer --source [sourcePath] --locales [locale1,locale2] --fileType [fileType]
+content-localizer --source [sourcePath] --locales [locale1,locale2] --fileTypes [fileType1,fileType2] --from [fromLocale]
 
 ```
 
 ## Options:
 
-- --source (-s): Specify the path to the source directory.
-- --locales (-l): Provide a string with comma-separated list of target locales.
-- --fileType (-t): Specify the file type you want to replicate (e.g., '.md' for Markdown files).
+- --source (\*required) : Specify the path to the source directory.
+- --locales (\*required) : Provide a comma-separated list of target locales.
+- --fileTypes (\*required) : Specify a comma-separated list of the file types you want to replicate (e.g., '.md' for Markdown files, '.md,.txt' for Markdown and text files).
+- --from (optional) : Specify the locale type of the file content at specified path (defaulted to en).
 
 ## Example:
 
 ```bash
-content-localizer --source "en" --locales "no,sw" --fileType .md
+content-localizer --source src/en --locales no,sw --fileTypes .md,.txt --from en
 
 ```
 
@@ -44,7 +45,7 @@ Let's say you have a source directory structure like this:
     - introduction.md
     - getting-started/
     - installation/
-        - installation.md
+        - installation.txt
     - usage/
         - usage.md
     - configuration/
@@ -61,7 +62,7 @@ For the 'no' locale:
     - introduction.md
     - getting-started/
     - installation/
-        - installation.md
+        - installation.txt
     - usage/
         - usage.md
     - configuration/
@@ -76,7 +77,7 @@ For the 'sw' locale:
     - introduction.md
     - getting-started/
     - installation/
-        - installation.md
+        - installation.txt
     - usage/
         - usage.md
     - configuration/
