@@ -1,6 +1,6 @@
 {
   "name": "content-localizer",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A CLI tool for translating files contents at a specific folder path.",
   "keywords": [
     "content localization",
