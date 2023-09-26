@@ -1,6 +1,6 @@
 {
   "name": "content-localizer",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A CLI tool for translating files contents at a specific folder path.",
   "keywords": [
     "content localization",
@@ -10,7 +10,9 @@
     "multilingual content",
     "content management",
     "site localization",
-    "VitePress translation"
+    "VitePress translation",
+    "file translation",
+    "web page translation"
   ],
   "repository": {
     "type": "git",
