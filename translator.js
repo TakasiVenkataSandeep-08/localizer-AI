@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const { translate } = require("free-translate");
 const { createSpinner } = require("./spinner.js");
+const { translateText } = require("./pipeline.js");
 
 /**
  * Displays a welcome message to the user.
@@ -29,7 +29,13 @@ function displayWelcomeMessage() {
  */
 function parseCommandLineArgs() {
   const args = process.argv.slice(2);
-  const options = { source: "", fileTypes: [], locales: [], from: "en" };
+  const options = {
+    source: "",
+    fileTypes: [],
+    locales: [],
+    from: "en",
+    destination: "",
+  };
 
   displayWelcomeMessage();
 
@@ -38,6 +44,8 @@ function parseCommandLineArgs() {
       i < args.length - 1 && !args[i + 1]?.startsWith("--");
     if (args[i] === "--source" && allowExtractArgs) {
       options.source = args[i + 1]?.trim();
+    } else if (args[i] === "--destination" && allowExtractArgs) {
+      options.destination = args[i + 1]?.trim();
     } else if (args[i] === "--fileTypes" && allowExtractArgs) {
       const fileTypes = args[i + 1];
       if (!!fileTypes) {
@@ -84,7 +92,13 @@ function parseCommandLineArgs() {
  * @param {Array} locales - Array of target locales.
  * @param {string} fileTypes - File types to translate.
  */
-async function replicateFiles(sourcePath, locales, fileTypes, from) {
+async function replicateFiles(
+  sourcePath,
+  locales,
+  fileTypes,
+  from,
+  destinationPath
+) {
   const spinner = createSpinner(); // Create a custom spinner
   spinner.start();
   console.log("Please wait while we work our magic...\n");
@@ -102,14 +116,22 @@ async function replicateFiles(sourcePath, locales, fileTypes, from) {
 
           await Promise.all(
             locales.map(async (locale) => {
-              const localeFilePath = path.join(locale, targetItemPath);
+              const localeFilePath = path.join(
+                destinationPath ? `${destinationPath}/${locale}` : locale,
+                targetItemPath
+              );
               fs.mkdirSync(path.dirname(localeFilePath), { recursive: true });
 
               try {
-                const translatedData = await translate(`${fileContent}`, {
-                  from,
-                  to: locale,
-                });
+                let translatedData;
+                if (item.endsWith(".json")) {
+                } else {
+                  translatedData = await translateText({
+                    content: `${fileContent}`,
+                    from,
+                    to: locale,
+                  });
+                }
                 fs.writeFileSync(localeFilePath, translatedData, "utf8");
                 if (
                   (locale in localeSuccess && !localeSuccess[locale]) ||
@@ -148,7 +170,8 @@ function main() {
     options.source,
     options.locales,
     options.fileTypes,
-    options.from
+    options.from,
+    options.destination
   );
 }
 

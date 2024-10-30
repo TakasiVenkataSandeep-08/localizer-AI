@@ -28,6 +28,7 @@
   "author": "Takasi Venkata Sandeep",
   "license": "MIT",
   "dependencies": {
-    "free-translate": "^0.6.1"
+    "gpt4-tokenizer": "^1.3.0",
+    "openai": "^4.40.2"
   }
 }
