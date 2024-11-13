@@ -1,19 +1,8 @@
 const fs = require("fs");
-const { translateText } = require("../pipeline.js");
 const path = require("path");
-const { getContext } = require("./common.js");
-const { detectFileType } = require("./common.js");
+const { translateText } = require("../pipeline.js");
+const { getContext, detectFileType } = require("./common.js");
 
-/**
- * Translates a JSON object following nested paths
- * @param {Object} json - Source JSON object
- * @param {string[]} locales - Target language codes
- * @param {string} localeFilePath - Path where translated files will be saved
- * @param {string} [from="en"] - Source language code
- * @param {string} [contextFilePath] - Path to the context file
- * @param {string} [fileContext] - Context from the file
- * @returns {Promise<Object.<string, Object>>}
- */
 const translateNestedJson = async ({
   fileContent,
   locales,
@@ -56,7 +45,6 @@ const translateNestedJson = async ({
     }
 
     try {
-      // Get context from nested path
       const pathString = path.join(".");
       const localeContext =
         fileContext ||
@@ -71,7 +59,6 @@ const translateNestedJson = async ({
         fileType: "txt",
       });
 
-      // Cache the result
       cache.set(cacheKey, translated);
       return translated;
     } catch (error) {
@@ -82,7 +69,6 @@ const translateNestedJson = async ({
     }
   };
 
-  // Process all locales in parallel but with locale-specific paths
   await Promise.all(
     locales.map(async (to) => {
       try {
@@ -101,22 +87,9 @@ const translateNestedJson = async ({
           }
         }
 
+        fs.mkdirSync(path.dirname(localeFilePath), { recursive: true });
+        fs.writeFileSync(localeFilePath, contentToWrite);
         translatedData[to] = processedContent;
-
-        // Generate locale-specific file path
-        const localeSpecificPath = localeFilePath.replace(
-          /^(.*?\/)?([^/]+)$/,
-          `$1${to}/$2`
-        );
-
-        // Ensure output directory exists
-        const outputDir = path.dirname(localeSpecificPath);
-        if (!fs.existsSync(outputDir)) {
-          fs.mkdirSync(outputDir, { recursive: true });
-        }
-
-        // Write the file with locale-specific path
-        fs.writeFileSync(localeSpecificPath, contentToWrite);
       } catch (error) {
         console.error(`❌ Failed to process locale ${to}: ${error.message}`);
       }
