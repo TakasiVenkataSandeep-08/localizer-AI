@@ -1,6 +1,8 @@
 const fs = require("fs");
 const { translateText } = require("../pipeline.js");
 const path = require("path");
+const { getContext } = require("./common.js");
+const { detectFileType } = require("./common.js");
 
 /**
  * Translates a JSON object following nested paths
@@ -8,6 +10,8 @@ const path = require("path");
  * @param {string[]} locales - Target language codes
  * @param {string} localeFilePath - Path where translated files will be saved
  * @param {string} [from="en"] - Source language code
+ * @param {string} [contextFilePath] - Path to the context file
+ * @param {string} [fileContext] - Context from the file
  * @returns {Promise<Object.<string, Object>>}
  */
 const translateNestedJson = async ({
@@ -16,9 +20,11 @@ const translateNestedJson = async ({
   localeFilePath,
   from = "en",
   contextFilePath,
+  fileContext,
 }) => {
   const translatedData = {};
   const cache = new Map();
+  const fileType = detectFileType(localeFilePath);
 
   const processValue = async (value, to, path = []) => {
     if (value === null || value === undefined) return value;
@@ -53,6 +59,7 @@ const translateNestedJson = async ({
       // Get context from nested path
       const pathString = path.join(".");
       const localeContext =
+        fileContext ||
         getContext(`${contextFilePath}/${pathString}`) ||
         getContext(`${contextFilePath}/$fileContext`);
 
@@ -61,36 +68,57 @@ const translateNestedJson = async ({
         from,
         to,
         localeContext,
+        fileType: "txt",
       });
 
-      const cleanTranslated = translated.trim();
-      cache.set(cacheKey, cleanTranslated);
-      return cleanTranslated;
+      // Cache the result
+      cache.set(cacheKey, translated);
+      return translated;
     } catch (error) {
       console.warn(
-        `Translation failed for "${value}" at path "${path.join(".")}": ${error.message}`
+        `❌ Translation failed for "${value}" at path "${path.join(".")}": ${error.message}`
       );
       return value;
     }
   };
 
-  // Process all locales in parallel
+  // Process all locales in parallel but with locale-specific paths
   await Promise.all(
     locales.map(async (to) => {
       try {
-        translatedData[to] = await processValue(fileContent, to);
+        const processedContent = await processValue(fileContent, to);
+        let contentToWrite = processedContent;
 
-        // Ensure output directory exists
-        if (!fs.existsSync(path.dirname(localeFilePath))) {
-          fs.mkdirSync(path.dirname(localeFilePath), { recursive: true });
+        if (fileType === "json") {
+          if (typeof processedContent === "object") {
+            contentToWrite = JSON.stringify(processedContent, null, 2);
+          } else {
+            throw new Error("Invalid JSON content after translation");
+          }
+        } else {
+          if (typeof processedContent !== "string") {
+            contentToWrite = String(processedContent);
+          }
         }
 
-        fs.writeFileSync(
-          localeFilePath,
-          JSON.stringify(translatedData[to], null, 2)
+        translatedData[to] = processedContent;
+
+        // Generate locale-specific file path
+        const localeSpecificPath = localeFilePath.replace(
+          /^(.*?\/)?([^/]+)$/,
+          `$1${to}/$2`
         );
+
+        // Ensure output directory exists
+        const outputDir = path.dirname(localeSpecificPath);
+        if (!fs.existsSync(outputDir)) {
+          fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        // Write the file with locale-specific path
+        fs.writeFileSync(localeSpecificPath, contentToWrite);
       } catch (error) {
-        console.error(`Failed to process locale ${to}: ${error.message}`);
+        console.error(`❌ Failed to process locale ${to}: ${error.message}`);
       }
     })
   );

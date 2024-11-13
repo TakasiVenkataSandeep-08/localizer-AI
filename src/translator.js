@@ -5,7 +5,11 @@ const { createSpinner } = require("./spinner.js");
 const { translateText } = require("./pipeline.js");
 const readline = require("readline");
 const { translateNestedJson } = require("./utils/localeFileTranslator.js");
-const { getContext } = require("./utils/common.js");
+const {
+  getContext,
+  getLocaleContextType,
+  detectFileType,
+} = require("./utils/common.js");
 
 const LOCALE_CONTEXT_TYPES = {
   // FOLDER: "folder",
@@ -27,6 +31,9 @@ const LOCALE_CONTEXT_DESCRIPTIONS = {
  */
 function displayWelcomeMessage() {
   console.log(
+    "\n--------------------------------------------------------------------"
+  );
+  console.log(
     [
       "  _                         _  _                             _____",
       " | |                       | |(_)                     /\\    |_   _|",
@@ -36,8 +43,11 @@ function displayWelcomeMessage() {
       " |______|\\___|  \\___|\\__,_||_||_|/___|\\___/|_|    /_/    \\_\\|_____|",
     ].join("\n")
   );
-  console.log("\n\nWelcome to Locale AI!\n");
-  console.log("Explore more at https://www.npmjs.com/package/locale-ai\n");
+  console.log(
+    "\n--------------------------------------------------------------------"
+  );
+  console.log("\n\nWelcome to Localizer AI!\n");
+  console.log("Explore more at https://www.npmjs.com/package/localizer-ai\n");
 }
 
 /**
@@ -260,47 +270,6 @@ async function createConfigFile() {
         config.fileTypes,
         rl
       );
-
-      // Prompt for context values based on type
-      // if (
-      //   config.localeContextType === LOCALE_CONTEXT_TYPES.FOLDER ||
-      //   config.localeContextType === LOCALE_CONTEXT_TYPES.FILE
-      // ) {
-      //   for (const [path, _] of Object.entries(config.localeContext)) {
-      //     config.localeContext[path] = await new Promise((resolve) => {
-      //       rl.question(
-      //         `Enter context for ${config.localeContextType} "${path}": `,
-      //         (answer) => {
-      //           resolve(answer.trim());
-      //         }
-      //       );
-      //     });
-      //   }
-      // }
-      //  else if (config.localeContextType === LOCALE_CONTEXT_TYPES.DEEP) {
-      //   for (const [path, value] of Object.entries(config.localeContext)) {
-      //     if (typeof value === "string") {
-      //       // Handle non-JSON files
-      //       config.localeContext[path] = await new Promise((resolve) => {
-      //         rl.question(`Enter context for file "${path}": `, (answer) => {
-      //           resolve(answer.trim());
-      //         });
-      //       });
-      //     } else {
-      //       // Handle JSON files
-      //       config.localeContext[path].fileContext = await new Promise(
-      //         (resolve) => {
-      //           rl.question(
-      //             `Enter general context for JSON file "${path}": `,
-      //             (answer) => {
-      //               resolve(answer.trim());
-      //             }
-      //           );
-      //         }
-      //       );
-      //     }
-      //   }
-      // }
     }
 
     const configJson = JSON.stringify(config, null, 2);
@@ -332,9 +301,9 @@ async function parseCommandLineArgs() {
   try {
     configContent = fs.readFileSync("localizer-ai.config.json", "utf-8");
   } catch (error) {
-    console.error("Error: Config file not found.\n");
+    console.error("❌ Error: Config file not found.\n");
     console.info(
-      "Run 'localizer-ai --create-config' to create a config file.\n"
+      "💡 Run 'localizer-ai --create-config' to create a config file.\n"
     );
     process.exit(1);
   }
@@ -347,7 +316,7 @@ async function parseCommandLineArgs() {
     !configOptions.locales.length
   ) {
     console.error(
-      "Error: source, fileTypes, and locales options are required.\n"
+      "❌ Error: source, fileTypes, and locales options are required.\n"
     );
     process.exit(1);
   }
@@ -357,7 +326,7 @@ async function parseCommandLineArgs() {
     !fs.statSync(configOptions.source).isDirectory()
   ) {
     console.error(
-      `Error: The specified source directory '${configOptions.source}' does not exist.\n`
+      `❌ Error: The specified source directory '${configOptions.source}' does not exist.\n`
     );
     process.exit(1);
   }
@@ -387,6 +356,11 @@ async function replicateFiles(
 
   async function processFile(sourceItemPath, targetItemPath, item) {
     let fileContent = fs.readFileSync(sourceItemPath, "utf8");
+    const fileType = detectFileType(item);
+    let fileContentToTranslate = fileContent;
+    if (item.endsWith(".json")) {
+      fileContentToTranslate = JSON.parse(fileContent);
+    }
 
     const translationPromises = locales.map(async (locale) => {
       if (localeSuccess.has(locale)) return;
@@ -398,21 +372,27 @@ async function replicateFiles(
 
       try {
         if (item.endsWith(".json")) {
-          fileContent = JSON.parse(fileContent);
+          const localeContextType = getLocaleContextType();
+          let fileContext;
+          if (localeContextType === LOCALE_CONTEXT_TYPES.FILE) {
+            fileContext = getContext(targetItemPath);
+          }
           await translateNestedJson({
-            fileContent,
+            fileContent: fileContentToTranslate,
             locales,
             localeFilePath,
             from,
             contextFilePath: targetItemPath,
+            fileContext,
           });
         } else {
           const localeContext = getContext(targetItemPath);
           const translatedData = await translateText({
-            content: fileContent,
+            content: fileContentToTranslate,
             from,
             to: locale,
             localeContext,
+            fileType,
           });
           fs.mkdirSync(path.dirname(localeFilePath), { recursive: true });
           fs.writeFileSync(localeFilePath, translatedData, "utf8");
@@ -421,7 +401,7 @@ async function replicateFiles(
         localeSuccess.set(locale, true);
       } catch (error) {
         console.warn(
-          `Error translating file ${localeFilePath}: ${error.message}\n`
+          `❌ Error translating file ${localeFilePath}: ${error.message}\n`
         );
         localeSuccess.set(locale, false);
       }
@@ -439,9 +419,6 @@ async function replicateFiles(
         const targetItemPath = path.join(targetFolder, item);
         const isDirectory = fs.statSync(sourceItemPath).isDirectory();
 
-        console.log("sourceItemPath", sourceItemPath);
-        console.log("targetItemPath", targetItemPath);
-
         if (isDirectory) {
           await replicateFolder(sourceItemPath, targetItemPath);
         } else if (fileTypes.some((fileType) => item.endsWith(fileType))) {
@@ -450,7 +427,8 @@ async function replicateFiles(
       })
     );
   }
-
+  console.log("Please wait while we translate your files...");
+  spinner.start();
   await replicateFolder(sourcePath, "");
 
   locales.forEach((locale) => {
@@ -459,8 +437,4 @@ async function replicateFiles(
   spinner.stopAndPersist();
 }
 
-async function main() {
-  await parseCommandLineArgs();
-}
-
-main();
+module.exports = { parseCommandLineArgs };

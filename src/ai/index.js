@@ -2,8 +2,6 @@ const OpenAI = require("openai");
 
 const { openAiKey } = require("../config/common");
 
-console.log("openAiKey", openAiKey);
-
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: openAiKey, // Make sure to set this in your environment
@@ -24,12 +22,12 @@ const askAI = async ({ question, systemPrompt }) => {
   }
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini", // or "gpt-3.5-turbo" for a cheaper alternative
+    model: "gpt-4o-mini",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: question },
     ],
-    temperature: 0.7,
+    temperature: 0.4,
   });
 
   return response.choices[0].message.content;

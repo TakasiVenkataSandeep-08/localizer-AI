@@ -21,13 +21,13 @@
     "type": "git",
     "url": "https://github.com/TakasiVenkataSandeep-08/content-localizer"
   },
-  "main": "./translator.js",
+  "main": "./index.js",
   "bin": {
-    "localizer-ai": "./translator.js"
+    "localizer-ai": "./index.js"
   },
   "scripts": {
-    "dev": "node --watch ./translator.js",
-    "start": "node ./translator.js"
+    "dev": "node --watch ./index.js",
+    "start": "node ./index.js"
   },
   "author": "Takasi Venkata Sandeep",
   "license": "MIT",
