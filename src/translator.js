@@ -40,7 +40,7 @@ function displayWelcomeMessage() {
       " | |      ___    ___  __ _ | | _  ____ ___  _ __     /  \\     | |",
       " | |     / _ \\  / __|/ _` || || ||_  // _ \\| '__|   / /\\ \\    | |",
       " | |____| (_) || (__| (_| || || | / /|  __/| |     / ____ \\  _| |_",
-      " |______|\\___|  \\___|\\__,_||_||_|/___|\\___/|_|    /_/    \\_\\|_____|",
+      " |______|\\___/  \\___|\\__,_||_||_|/___|\\___/|_|    /_/    \\_\\|_____|",
     ].join("\n")
   );
   console.log(
@@ -379,7 +379,7 @@ async function replicateFiles(
           }
           await translateNestedJson({
             fileContent: fileContentToTranslate,
-            locales,
+            to: locale,
             localeFilePath,
             from,
             contextFilePath: targetItemPath,

@@ -5,30 +5,29 @@ const { getContext, detectFileType } = require("./common.js");
 
 const translateNestedJson = async ({
   fileContent,
-  locales,
+  to,
   localeFilePath,
   from = "en",
   contextFilePath,
   fileContext,
 }) => {
-  const translatedData = {};
   const cache = new Map();
   const fileType = detectFileType(localeFilePath);
 
-  const processValue = async (value, to, path = []) => {
+  const processValue = async (value, objectPath = []) => {
     if (value === null || value === undefined) return value;
 
     if (typeof value === "object") {
       if (Array.isArray(value)) {
         return Promise.all(
-          value.map((item, index) => processValue(item, to, [...path, index]))
+          value.map((item, index) => processValue(item, [...objectPath, index]))
         );
       }
 
       const result = {};
       await Promise.all(
         Object.entries(value).map(async ([key, val]) => {
-          result[key] = await processValue(val, to, [...path, key]);
+          result[key] = await processValue(val, [...objectPath, key]);
         })
       );
       return result;
@@ -45,7 +44,7 @@ const translateNestedJson = async ({
     }
 
     try {
-      const pathString = path.join(".");
+      const pathString = objectPath.join(".");
       const localeContext =
         fileContext ||
         getContext(`${contextFilePath}/${pathString}`) ||
@@ -63,40 +62,33 @@ const translateNestedJson = async ({
       return translated;
     } catch (error) {
       console.warn(
-        `❌ Translation failed for "${value}" at path "${path.join(".")}": ${error.message}`
+        `❌ Translation failed for "${value}" at path "${objectPath.join(".")}": ${error.message}`
       );
       return value;
     }
   };
 
-  await Promise.all(
-    locales.map(async (to) => {
-      try {
-        const processedContent = await processValue(fileContent, to);
-        let contentToWrite = processedContent;
+  try {
+    const processedContent = await processValue(fileContent);
+    let contentToWrite = processedContent;
 
-        if (fileType === "json") {
-          if (typeof processedContent === "object") {
-            contentToWrite = JSON.stringify(processedContent, null, 2);
-          } else {
-            throw new Error("Invalid JSON content after translation");
-          }
-        } else {
-          if (typeof processedContent !== "string") {
-            contentToWrite = String(processedContent);
-          }
-        }
-
-        fs.mkdirSync(path.dirname(localeFilePath), { recursive: true });
-        fs.writeFileSync(localeFilePath, contentToWrite);
-        translatedData[to] = processedContent;
-      } catch (error) {
-        console.error(`❌ Failed to process locale ${to}: ${error.message}`);
+    if (fileType === "json") {
+      if (typeof processedContent === "object") {
+        contentToWrite = JSON.stringify(processedContent, null, 2);
+      } else {
+        throw new Error("Invalid JSON content after translation");
       }
-    })
-  );
+    } else {
+      if (typeof processedContent !== "string") {
+        contentToWrite = String(processedContent);
+      }
+    }
 
-  return translatedData;
+    fs.mkdirSync(path.dirname(localeFilePath), { recursive: true });
+    fs.writeFileSync(localeFilePath, contentToWrite);
+  } catch (error) {
+    console.error(`❌ Failed to process locale ${to}: ${error.message}`);
+  }
 };
 
 module.exports = { translateNestedJson };

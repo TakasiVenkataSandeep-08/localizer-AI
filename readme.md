@@ -1,90 +1,158 @@
-# content-localizer CLI Documentation
+# Content Localizer CLI
 
-## Description
+[![NPM Version](https://img.shields.io/npm/v/content-localizer.svg)](https://www.npmjs.com/package/content-localizer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/node/v/content-localizer.svg)](https://nodejs.org)
 
-The `content-localizer` CLI tool is designed for replicating files and folders from a source directory to multiple locales. It simplifies content translation and localization processes for multi-locale projects. This tool can be particularly useful for translating pages in projects like VitePress.
+A powerful CLI tool for replicating and translating content across multiple locales. Perfect for projects requiring content localization, especially suited for VitePress and similar documentation frameworks.
+
+## Features
+
+- 📁 Replicate directory structures for multiple locales
+- 🔄 Support for multiple file types (.md, .txt, etc.)
+- 🎯 Preserve original file structure and formatting
+- 🚀 Easy to use CLI interface
+- ⚡️ Fast and efficient processing
+- 📦 Perfect for VitePress projects
+
+## Prerequisites
+
+- Node.js >= 16.0.0
+- npm or yarn package manager
 
 ## Installation
 
-You can install the `content-localizer` CLI tool via npm:
-
 ```bash
+# Install globally
 npm install -g content-localizer
-
 ```
 
 ## Usage
 
-After installing the content-localizer CLI tool, you can run it from the command line as follows:
+Basic command structure:
 
 ```bash
 content-localizer --source [sourcePath] --locales [locale1,locale2] --fileTypes [fileType1,fileType2] --from [fromLocale]
-
 ```
 
-## Options:
+### Required Options
 
-- --source (\*required) : Specify the path to the source directory.
-- --locales (\*required) : Provide a comma-separated list of target locales.
-- --fileTypes (\*required) : Specify a comma-separated list of the file types you want to replicate (e.g., '.md' for Markdown files, '.md,.txt' for Markdown and text files).
-- --from (optional) : Specify the locale type of the file content at specified path (defaulted to en).
+- `--source`: Path to the source directory
+- `--locales`: Comma-separated list of target locales (e.g., 'no,sw')
+- `--fileTypes`: Comma-separated list of file extensions (e.g., '.md,.txt')
 
-## Example:
+### Optional Options
+
+- `--from`: Source locale type (defaults to 'en')
+
+### Example
 
 ```bash
 content-localizer --source src/en --locales no,sw --fileTypes .md,.txt --from en
-
 ```
 
-This command will replicate the specified file type from the 'en' source directory to the 'no' and 'sw' locales.
+## Directory Structure Example
 
-Let's say you have a source directory structure like this:
+Source structure:
 
-```md
-    en/
-    - introduction.md
-    - getting-started/
-    - installation/
-        - installation.txt
-    - usage/
-        - usage.md
-    - configuration/
-    - settings/
-        - settings.md
+```
+en/
+├── introduction.md
+├── getting-started/
+├── installation/
+│   └── installation.txt
+├── usage/
+│   └── usage.md
+└── settings/
+    └── settings.md
 ```
 
-Running the replicateLocales function as shown in the usage example will replicate the Markdown files within the source directory to the specified locales. The resulting directory structure for each locale will be as follows:
+After running the tool, it creates identical structures for each locale:
 
-For the 'no' locale:
+Norwegian (no):
 
-```md
-    no/
-    - introduction.md
-    - getting-started/
-    - installation/
-        - installation.txt
-    - usage/
-        - usage.md
-    - configuration/
-    - settings/
-        - settings.md
+```
+no/
+├── introduction.md
+├── getting-started/
+├── installation/
+│   └── installation.txt
+├── usage/
+│   └── usage.md
+└── settings/
+    └── settings.md
 ```
 
-For the 'sw' locale:
+Swahili (sw):
 
-```md
-    sw/
-    - introduction.md
-    - getting-started/
-    - installation/
-        - installation.txt
-    - usage/
-        - usage.md
-    - configuration/
-    - settings/
-        - settings.md
 ```
+sw/
+├── introduction.md
+├── getting-started/
+├── installation/
+│   └── installation.txt
+├── usage/
+│   └── usage.md
+└── settings/
+    └── settings.md
+```
+
+## Use Cases
+
+### VitePress Documentation
+
+Perfect for setting up multi-language documentation:
+
+1. Organize your English content in `src/en`
+2. Run content-localizer to create locale-specific directories
+3. Translate content for each locale
+4. Configure VitePress to use the generated structure
+
+### General Website Localization
+
+Easily create locale-specific content structures for any web project:
+
+1. Store your source content in a primary locale directory
+2. Use content-localizer to replicate the structure
+3. Translate content while maintaining the same organization
+
+## Common Workflows
+
+1. **Initial Setup**
+
+   ```bash
+   content-localizer --source docs/en --locales fr,es,de --fileTypes .md
+   ```
+
+2. **Adding New Languages**
+   ```bash
+   content-localizer --source docs/en --locales it,pt --fileTypes .md,.txt
+   ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-The content-localizer CLI tool is released under the [MIT License]("https://opensource.org/licenses/MIT").
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- Create an issue for bug reports or feature requests
+- Star the project if you find it useful
+- Follow the author for updates
+
+## Author
+
+Takasi Venkata Sandeep
+
+## Repository
+
+[GitHub Repository](https://github.com/TakasiVenkataSandeep-08/content-localizer)
