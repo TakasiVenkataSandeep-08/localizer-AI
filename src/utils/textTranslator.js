@@ -1,7 +1,10 @@
-const { askAI } = require("./ai/index.js");
-const { createFormatTemplate } = require("./utils/common.js");
-const { translateCleaner } = require("./utils/common.js");
-const { systemPrompt } = require("./utils/prompt.js");
+const { createFormatTemplate } = require("./common.js");
+const { translateCleaner } = require("./common.js");
+const { systemPrompt } = require("../constants/prompt.js");
+const { getValueFromConfig } = require("./common.js");
+const { AI_SERVICE_PROVIDERS } = require("../constants/config.js");
+
+let askAI;
 
 /**
  * Translates the given content from one language to another using OpenAI's GPT-3 model.
@@ -16,6 +19,18 @@ async function translateText({ content, from, to, localeContext, fileType }) {
   try {
     if (!content) {
       throw new Error("No content provided for translation");
+    }
+
+    if (!askAI) {
+      const aiServiceProvider = getValueFromConfig("aiServiceProvider");
+
+      if (aiServiceProvider === AI_SERVICE_PROVIDERS.MISTRALAI) {
+        const { askMistralAI } = require("../ai/mistralAI.js");
+        askAI = askMistralAI;
+      } else {
+        const { askOpenAI } = require("../ai/openAI.js");
+        askAI = askOpenAI;
+      }
     }
 
     let context = "";

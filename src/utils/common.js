@@ -1,63 +1,14 @@
 let localeConfig;
 
 /**
- * @typedef {Object} FileTypeConfig
- * @property {RegExp[]} preservePatterns - Patterns to preserve during translation
- * @property {function} preProcess - Function to run before translation
- * @property {function} postProcess - Function to run after translation
+ * Creates a template for text formatting with preserved special patterns
+ * @param {string} content - The content to be formatted
+ * @param {string} [fileType="txt"] - The type of file being processed ("txt" or "md")
+ * @returns {Object} An object containing:
+ *   - template: The formatted template with placeholders
+ *   - chunks: Array of extracted content chunks
+ *   - reconstruct: Function to rebuild content from translated chunks
  */
-
-const FILE_TYPE_CONFIGS = {
-  json: {
-    preservePatterns: [
-      /\{[^}]+\}/g, // JSON objects
-      /"[^"]+"\s*:/g, // JSON keys
-      /\s*\n\s*/g, // Preserve newlines and indentation
-    ],
-    preProcess: (text) => text,
-    postProcess: (text) => {
-      try {
-        // Parse and stringify to maintain JSON formatting
-        return JSON.stringify(JSON.parse(text), null, 2);
-      } catch {
-        return text;
-      }
-    },
-  },
-  md: {
-    preservePatterns: [
-      /\[([^\]]+)\]\(([^)]+)\)/g, // Markdown links
-      /^#{1,6}\s+.*$/gm, // Headers with content
-      /`[^`]+`/g, // Inline code
-      /```[\s\S]*?```/g, // Code blocks
-      /^\s*[-*+]\s+/gm, // List items
-      /^\s+/gm, // Preserve leading whitespace
-      /\n{2,}/g, // Preserve multiple newlines
-    ],
-    preProcess: (text) => {
-      return text
-        .replace(/^"#"\s*$/gm, "") // Remove standalone "#" markers
-        .replace(/^["']|["']$/gm, "") // Remove wrapping quotes
-        .replace(/\n{3,}/g, "\n\n"); // Normalize multiple newlines
-    },
-    postProcess: (text) => {
-      return text
-        .replace(/\n{4,}/g, "\n\n\n") // Max 3 consecutive newlines
-        .replace(/^(#{1,6})\s+"([^"]+)"/, "$1 $2"); // Clean up quoted headers
-    },
-  },
-  txt: {
-    preservePatterns: [
-      /\b(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+(?:\/[^\s]*)?/g, // URLs
-      /^\s+/gm, // Preserve leading whitespace
-      /\s+$/gm, // Preserve trailing whitespace
-      /\n{1,}/g, // Preserve newlines
-    ],
-    preProcess: (text) => text,
-    postProcess: (text) => text,
-  },
-};
-
 const createFormatTemplate = (content, fileType = "txt") => {
   if (!content) return { template: "", chunks: [] };
 
@@ -199,6 +150,11 @@ const createFormatTemplate = (content, fileType = "txt") => {
   };
 };
 
+/**
+ * Retrieves locale context from configuration
+ * @param {string} pathToContext - Path to the context in the locale configuration
+ * @returns {string} The locale context string or empty string if not found
+ */
 const getContext = (pathToContext) => {
   if (!localeConfig) {
     localeConfig = require("../../localizer-ai.config.json");
@@ -207,6 +163,17 @@ const getContext = (pathToContext) => {
   return localeContext[pathToContext] || "";
 };
 
+const getValueFromConfig = (path) => {
+  if (!localeConfig) {
+    localeConfig = require("../../localizer-ai.config.json");
+  }
+  return localeConfig[path];
+};
+
+/**
+ * Gets the locale context type from configuration
+ * @returns {string} The locale context type
+ */
 const getLocaleContextType = () => {
   if (!localeConfig) {
     localeConfig = require("../../localizer-ai.config.json");
@@ -216,14 +183,21 @@ const getLocaleContextType = () => {
 
 /**
  * Detects file type from file path
- * @param {string} filePath
- * @returns {string}
+ * @param {string} filePath - Path to the file
+ * @returns {string} The detected file type or "txt" as fallback
  */
 const detectFileType = (filePath) => {
   const extension = filePath.split(".").pop().toLowerCase();
-  return FILE_TYPE_CONFIGS[extension] ? extension : "txt";
+  return extension || "txt";
 };
 
+/**
+ * Cleans and normalizes translated text while preserving original formatting
+ * @param {string} translatedText - The raw translated text
+ * @param {string} originalText - The original text before translation
+ * @param {string} [fileType="txt"] - The type of file being processed ("txt" or "md")
+ * @returns {string} The cleaned and normalized translated text
+ */
 const translateCleaner = (translatedText, originalText, fileType = "txt") => {
   if (!translatedText) return originalText;
 
@@ -343,4 +317,5 @@ module.exports = {
   detectFileType,
   createFormatTemplate,
   translateCleaner,
+  getValueFromConfig,
 };

@@ -1,7 +1,5 @@
-const { parseCommandLineArgs } = require("./src/translator.js");
+const { commandExecutor } = require("./src/cli/commandExecutor.js");
 
-async function main() {
-  await parseCommandLineArgs();
-}
-
-main();
+(async function () {
+  await commandExecutor();
+})();

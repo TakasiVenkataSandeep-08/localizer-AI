@@ -1,8 +1,21 @@
 const fs = require("fs");
 const path = require("path");
-const { translateText } = require("../pipeline.js");
+const { translateText } = require("./textTranslator.js");
 const { getContext, detectFileType } = require("./common.js");
 
+/**
+ * Translates a nested JSON/text content structure to a target language.
+ *
+ * @param {Object} options - The translation options
+ * @param {Object|string} options.fileContent - The content to translate
+ * @param {string} options.to - Target language code (e.g., 'es', 'fr')
+ * @param {string} options.localeFilePath - Path where the translated file will be saved
+ * @param {string} [options.from='en'] - Source language code (defaults to 'en')
+ * @param {string} [options.contextFilePath] - Path to the context file for translation
+ * @param {string} [options.fileContext] - Direct context string for translation
+ * @returns {Promise<void>} - Resolves when translation is complete
+ * @throws {Error} - If JSON content is invalid after translation
+ */
 const translateNestedJson = async ({
   fileContent,
   to,

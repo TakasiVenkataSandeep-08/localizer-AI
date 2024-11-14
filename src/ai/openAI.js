@@ -1,10 +1,10 @@
 const OpenAI = require("openai");
 
-const { openAiKey } = require("../config/common");
+const { getApiKey } = require("../config/common");
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: openAiKey, // Make sure to set this in your environment
+  apiKey: getApiKey("openai-key"), // Make sure to set this in your environment
 });
 
 /**
@@ -16,7 +16,7 @@ const openai = new OpenAI({
  * @param {AskAIInput} input
  * @returns {Promise<string>}
  */
-const askAI = async ({ question, systemPrompt }) => {
+const askOpenAI = async ({ question, systemPrompt }) => {
   if (!question) {
     throw new Error("Question is required");
   }
@@ -33,4 +33,4 @@ const askAI = async ({ question, systemPrompt }) => {
   return response.choices[0].message.content;
 };
 
-module.exports = { askAI };
+module.exports = { askOpenAI };
