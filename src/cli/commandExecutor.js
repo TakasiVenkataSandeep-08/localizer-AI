@@ -11,7 +11,7 @@ const {
  * Parses command-line arguments and executes the corresponding command.
  *
  * Available commands:
- * - --create-config: Creates a new configuration file with user input
+ * - create-config: Creates a new configuration file with user input
  * - translate: Translates files according to config settings
  *
  * @async
@@ -28,10 +28,13 @@ async function commandExecutor() {
     await handleTranslateLocales();
     process.exit(0);
   } else {
-    console.error("❌ Error: Invalid command. Please try again.\n");
+    if (!args.includes("help")) {
+      console.error("❌ Error: Invalid command. Please try again.\n");
+    }
     console.log("✅ Available commands:\n");
-    console.log("  --create-config   : Create a new configuration file");
-    console.log("  translate         : Translate locale files");
+    console.log("  help            : Show help");
+    console.log("  create-config   : Create a new configuration file");
+    console.log("  translate       : Translate locale files");
     process.exit(1);
   }
 }

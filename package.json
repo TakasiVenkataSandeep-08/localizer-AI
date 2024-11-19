@@ -28,7 +28,7 @@
   "scripts": {
     "dev": "node --watch ./index.js",
     "start": "node ./index.js",
-    "postinstall": "chmod +x ./index.js"
+    "postinstall": "bash ./scripts/postinstall.sh"
   },
   "author": "Takasi Venkata Sandeep",
   "license": "MIT",
@@ -45,6 +45,7 @@
   "homepage": "https://github.com/TakasiVenkataSandeep-08/localizer-AI#readme",
   "files": [
     "index.js",
-    "src/**/*"
+    "src/**/*",
+    "scripts/postinstall.sh"
   ]
 }

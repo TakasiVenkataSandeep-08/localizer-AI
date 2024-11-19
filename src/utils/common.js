@@ -1,8 +1,16 @@
+const path = require("path");
+
 let localeConfig;
-const getValueFromConfig = (path) => {
+
+const getConfig = () => {
   if (!localeConfig) {
-    localeConfig = require("../../localizer-ai.config.json");
+    localeConfig = require(path.join(process.cwd(), "localizer-ai.config.json"));
   }
+  return localeConfig;
+};
+
+const getValueFromConfig = (path) => {
+  const localeConfig = getConfig();
   return localeConfig[path];
 };
 
@@ -11,9 +19,7 @@ const getValueFromConfig = (path) => {
  * @returns {string} The locale context type
  */
 const getLocaleContextType = () => {
-  if (!localeConfig) {
-    localeConfig = require("../../localizer-ai.config.json");
-  }
+  const localeConfig = getConfig();
   return localeConfig.localeContextType;
 };
 
@@ -613,9 +619,7 @@ const detectFileType = (filePath) => {
  * @returns {string} The locale context string or empty string if not found
  */
 const getContext = (pathToContext) => {
-  if (!localeConfig) {
-    localeConfig = require("../../localizer-ai.config.json");
-  }
+  const localeConfig = getConfig();
   const localeContext = localeConfig.localeContext;
   return localeContext[pathToContext] || "";
 };

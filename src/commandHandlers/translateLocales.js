@@ -1,5 +1,6 @@
 const { replicateFiles } = require("../utils/fileReplicator.js");
 const fs = require("fs");
+const path = require("path");
 
 /**
  * Handles the translation of locale files based on configuration settings.
@@ -16,11 +17,14 @@ const fs = require("fs");
 async function handleTranslateLocales() {
   let configContent;
   try {
-    configContent = fs.readFileSync("localizer-ai.config.json", "utf-8");
+    configContent = fs.readFileSync(
+      path.join(process.cwd(), "localizer-ai.config.json"),
+      "utf-8"
+    );
   } catch (error) {
     console.error("❌ Error: Config file not found.\n");
     console.info(
-      "💡 Run 'localizer-ai --create-config' to create a config file.\n"
+      "💡 Run 'localizer-ai create-config' to create a config file.\n"
     );
     process.exit(1);
   }
