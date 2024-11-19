@@ -37,5 +37,15 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/TakasiVenkataSandeep-08/localizer-AI/issues"
+  },
+  "homepage": "https://github.com/TakasiVenkataSandeep-08/localizer-AI#readme",
+  "files": [
+    "src",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ]
 }
