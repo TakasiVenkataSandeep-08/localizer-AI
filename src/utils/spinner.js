@@ -1,6 +1,6 @@
 /**
  * Creates a custom text-based spinner.
- * @returns {Object} A spinner object with start(), setLocaleStatus(), render(), and stopAndPersist() methods.
+ * @returns A spinner object with start(), setLocaleStatus(), render(), and stopAndPersist() methods.
  */
 function createSpinner() {
   let interval;
@@ -11,7 +11,7 @@ function createSpinner() {
   return {
     start() {
       interval = setInterval(() => {
-        process.stdout.clearLine();
+        process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
         process.stdout.write(frames[frame]);
         frame = (frame + 1) % frames.length;
@@ -21,7 +21,7 @@ function createSpinner() {
       localeStatus[locale] = status;
     },
     render() {
-      process.stdout.clearLine();
+      process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
       process.stdout.write("Translation status:\n");
       const statusLines = Object.entries(localeStatus)
