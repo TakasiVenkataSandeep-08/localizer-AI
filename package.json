@@ -27,7 +27,8 @@
   },
   "scripts": {
     "dev": "node --watch ./index.js",
-    "start": "node ./index.js"
+    "start": "node ./index.js",
+    "postinstall": "chmod +x ./index.js"
   },
   "author": "Takasi Venkata Sandeep",
   "license": "MIT",
@@ -43,9 +44,7 @@
   },
   "homepage": "https://github.com/TakasiVenkataSandeep-08/localizer-AI#readme",
   "files": [
-    "src",
     "index.js",
-    "README.md",
-    "LICENSE"
+    "src/**/*"
   ]
 }
