@@ -4,7 +4,10 @@ let localeConfig;
 
 const getConfig = () => {
   if (!localeConfig) {
-    localeConfig = require(path.join(process.cwd(), "localizer-ai.config.json"));
+    localeConfig = require(path.join(
+      process.cwd(),
+      "localizer-ai.config.json"
+    ));
   }
   return localeConfig;
 };
@@ -250,7 +253,7 @@ const mdPatterns = [
   },
 ];
 
-const createFormatTemplate = (content, fileType = "txt") => {
+const createFormatTemplate = (content, fileType = ".txt") => {
   if (!content) return { template: "", chunks: [] };
 
   let chunks = [];
@@ -258,7 +261,7 @@ const createFormatTemplate = (content, fileType = "txt") => {
   let template = content;
   let matches = [];
 
-  if (fileType === "txt") {
+  if (fileType === ".txt") {
     const paragraphs = content.split(/(?<=\n)(?:\s*\n)+/);
     let lastWasEmpty = false;
 
@@ -276,7 +279,7 @@ const createFormatTemplate = (content, fileType = "txt") => {
     });
 
     template = chunks.map((_, index) => `$chunk-${index + 1}`).join("\n");
-  } else if (fileType === "md") {
+  } else if (fileType === ".md") {
     let remainingContent = content;
 
     for (const { pattern, type, getFormat } of mdPatterns) {
@@ -313,7 +316,7 @@ const createFormatTemplate = (content, fileType = "txt") => {
         const format = chunkFormats[index];
         let formattedChunk = chunk;
 
-        if (fileType === "txt") {
+        if (fileType === ".txt") {
           if (format.isEmptyLine) {
             formattedChunk = "\n";
           } else {
@@ -328,7 +331,7 @@ const createFormatTemplate = (content, fileType = "txt") => {
                 .join("\n") +
               format.trailingSpaces;
           }
-        } else if (fileType === "md") {
+        } else if (fileType === ".md") {
           const matchType = matches[index].type;
           formattedChunk = formatMarkdownChunk(chunk, matchType, format);
         }
@@ -399,7 +402,9 @@ const formatMarkdownChunk = (chunk, type, format) => {
         .map((line, i) => {
           const originalStructure =
             format.originalStructure[i] || format.originalStructure[0];
-          return `${originalStructure.indent}${originalStructure.quoteMarkers}${line.replace(/^>\s*/, "").trim()}`;
+          return `${originalStructure.indent}${
+            originalStructure.quoteMarkers
+          }${line.replace(/^>\s*/, "").trim()}`;
         })
         .join("\n");
 
@@ -450,7 +455,10 @@ const formatMarkdownChunk = (chunk, type, format) => {
           const originalStructure =
             format.originalStructure[i] || format.originalStructure[0];
           const checkbox = format.checked[i] ? "[x]" : "[ ]";
-          return `${originalStructure.indent}- ${checkbox} ${line.replace(/^[-*+]\s+\[[x ]\]\s*/, "")}`;
+          return `${originalStructure.indent}- ${checkbox} ${line.replace(
+            /^[-*+]\s+\[[x ]\]\s*/,
+            ""
+          )}`;
         })
         .join("\n");
 
@@ -460,7 +468,10 @@ const formatMarkdownChunk = (chunk, type, format) => {
         .map((line, i) => {
           const originalIndent = format.originalStructure[i]?.indent || "";
           return i === 0
-            ? `${originalIndent}[^${format.id}]: ${line.replace(/^\[\^[^\]]+\]:\s*/, "")}`
+            ? `${originalIndent}[^${format.id}]: ${line.replace(
+                /^\[\^[^\]]+\]:\s*/,
+                ""
+              )}`
             : `${originalIndent}${line.trim()}`;
         })
         .join("\n");
@@ -470,7 +481,9 @@ const formatMarkdownChunk = (chunk, type, format) => {
         return format.originalContent;
       }
       const content = chunk.replace(/^<\w+[^>]*>|<\/\w+>$/g, "");
-      return `<${format.tag}${format.attributes ? " " + format.attributes : ""}>${content}</${format.tag}>`;
+      return `<${format.tag}${
+        format.attributes ? " " + format.attributes : ""
+      }>${content}</${format.tag}>`;
 
     case "details": {
       const formattedContent = format.content
@@ -559,13 +572,19 @@ const formatTable = (content, format) => {
               const totalSpace = width - translatedContent.length;
               const leftSpace = Math.floor(totalSpace / 2);
               const rightSpace = totalSpace - leftSpace;
-              return ` ${" ".repeat(leftSpace)}${translatedContent}${" ".repeat(rightSpace)} `;
+              return ` ${" ".repeat(leftSpace)}${translatedContent}${" ".repeat(
+                rightSpace
+              )} `;
             } else if (alignment.endsWith(":")) {
               // Right alignment
-              return ` ${" ".repeat(width - translatedContent.length)}${translatedContent} `;
+              return ` ${" ".repeat(
+                width - translatedContent.length
+              )}${translatedContent} `;
             }
             // Left alignment (default)
-            return ` ${translatedContent}${" ".repeat(width - translatedContent.length)} `;
+            return ` ${translatedContent}${" ".repeat(
+              width - translatedContent.length
+            )} `;
           })
           .join("|") +
         "|"
@@ -574,7 +593,7 @@ const formatTable = (content, format) => {
     .join("\n");
 };
 
-const translateCleaner = (translatedText, originalText, fileType = "md") => {
+const translateCleaner = (translatedText, originalText, fileType = ".md") => {
   if (!translatedText) return originalText;
 
   let cleaned = translatedText;
@@ -609,8 +628,8 @@ const translateCleaner = (translatedText, originalText, fileType = "md") => {
  * @returns {string} The detected file type or "txt" as fallback
  */
 const detectFileType = (filePath) => {
-  const extension = filePath.split(".").pop().toLowerCase();
-  return extension || "txt";
+  const ext = path.extname(filePath).toLowerCase();
+  return ext || ".txt";
 };
 
 /**

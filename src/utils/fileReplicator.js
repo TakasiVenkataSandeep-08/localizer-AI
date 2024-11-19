@@ -9,6 +9,7 @@ const {
   detectFileType,
 } = require("./common.js");
 const { LOCALE_CONTEXT_TYPES } = require("../constants/config.js");
+const { importJsOrTsFile } = require("./fileImporter.js");
 
 /**
  * Replicates files in the source directory to target directories with translations.
@@ -40,7 +41,12 @@ async function replicateFiles(
     let fileContent = fs.readFileSync(sourceItemPath, "utf8");
     const fileType = detectFileType(item);
     let fileContentToTranslate = fileContent;
-    if (item.endsWith(".json")) {
+
+    // Handle JS/TS files with default exports
+    if (fileType === ".js" || fileType === ".ts") {
+      fileContentToTranslate = await importJsOrTsFile(sourceItemPath);
+      if (!fileContentToTranslate) return;
+    } else if (fileType === ".json") {
       fileContentToTranslate = JSON.parse(fileContent);
     }
 
@@ -53,7 +59,7 @@ async function replicateFiles(
       );
 
       try {
-        if (item.endsWith(".json")) {
+        if (fileType === ".json" || fileType === ".js" || fileType === ".ts") {
           const localeContextType = getLocaleContextType();
           let fileContext;
           if (localeContextType === LOCALE_CONTEXT_TYPES.FILE) {
@@ -66,6 +72,7 @@ async function replicateFiles(
             from,
             contextFilePath: targetItemPath,
             fileContext,
+            fileType,
           });
         } else {
           const localeContext = getContext(targetItemPath);

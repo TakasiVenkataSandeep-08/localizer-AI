@@ -5,6 +5,7 @@ const {
   LOCALE_CONTEXT_TYPES,
   LOCALE_CONTEXT_DESCRIPTIONS,
 } = require("../constants/config.js");
+const { importJsOrTsFile } = require("../utils/fileImporter.js");
 
 /**
  * Creates a readline interface for handling user input and output
@@ -55,6 +56,19 @@ async function generateLocaleContext(sourcePath, contextType, fileTypes) {
                 ...nestedContext,
                 $fileContext: "",
               };
+            } else if (item.endsWith(".js") || item.endsWith(".ts")) {
+              const fileContent = await importJsOrTsFile(
+                process.cwd() + "/" + itemPath
+              );
+              if (fileContent) {
+                const nestedContext = await generateDeepContext(fileContent);
+                contextObj[relativeItemPath] = {
+                  ...nestedContext,
+                  $fileContext: "",
+                };
+              } else {
+                contextObj[relativeItemPath] = "";
+              }
             } else {
               contextObj[relativeItemPath] = "";
             }
@@ -150,7 +164,7 @@ async function handleCreateConfigFile() {
     while (config.fileTypes.length === 0) {
       config.fileTypes = await new Promise((resolve) => {
         rl.question(
-          "Enter file types to translate (comma-separated, e.g., .json,.txt,.md): ",
+          "Enter file types to translate (comma-separated, e.g., .json,.txt,.md,.js,.ts): ",
           (answer) => {
             const types = answer
               .split(",")

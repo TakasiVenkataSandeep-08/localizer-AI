@@ -354,7 +354,7 @@ async function replicateFiles(sourcePath, locales, fileTypes) {
 ## Roadmap
 
 - [ ] Add support for more AI providers
-- [ ] Support for more file formats like js, ts etc
+- [ ] Support for more file formats
 - [ ] Batch processing optimization
 - [ ] Translation quality metrics
 

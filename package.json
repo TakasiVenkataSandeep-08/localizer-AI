@@ -1,6 +1,6 @@
 {
   "name": "localizer-ai",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A powerful CLI tool for automating content localization using OpenAI GPT-4 or MistralAI, helping to localize apps. Supports multiple file types, preserves formatting, and enables context-aware translations.",
   "keywords": [
     "content localization",

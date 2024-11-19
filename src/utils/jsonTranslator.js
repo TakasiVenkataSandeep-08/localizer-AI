@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { translateText } = require("./textTranslator.js");
-const { getContext, detectFileType } = require("./common.js");
+const { getContext } = require("./common.js");
 
 /**
  * Translates a nested JSON/text content structure to a target language.
@@ -23,9 +23,9 @@ const translateNestedJson = async ({
   from = "en",
   contextFilePath,
   fileContext,
+  fileType,
 }) => {
   const cache = new Map();
-  const fileType = detectFileType(localeFilePath);
 
   const processValue = async (value, objectPath = []) => {
     if (value === null || value === undefined) return value;
@@ -68,14 +68,16 @@ const translateNestedJson = async ({
         from,
         to,
         localeContext,
-        fileType: "txt",
+        fileType: ".txt",
       });
 
       cache.set(cacheKey, translated);
       return translated;
     } catch (error) {
       console.warn(
-        `❌ Translation failed for "${value}" at path "${objectPath.join(".")}": ${error.message}`
+        `❌ Translation failed for "${value}" at path "${objectPath.join(
+          "."
+        )}": ${error.message}`
       );
       return value;
     }
@@ -85,12 +87,15 @@ const translateNestedJson = async ({
     const processedContent = await processValue(fileContent);
     let contentToWrite = processedContent;
 
-    if (fileType === "json") {
-      if (typeof processedContent === "object") {
-        contentToWrite = JSON.stringify(processedContent, null, 2);
-      } else {
-        throw new Error("Invalid JSON content after translation");
-      }
+    if (fileType === ".js" || fileType === ".ts") {
+      // Try direct object conversion
+      contentToWrite = `export default ${JSON.stringify(
+        processedContent,
+        null,
+        2
+      )}`;
+    } else if (fileType === ".json") {
+      contentToWrite = JSON.stringify(processedContent, null, 2);
     } else {
       if (typeof processedContent !== "string") {
         contentToWrite = String(processedContent);
