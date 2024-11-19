@@ -1,6 +1,4 @@
 const { execSync } = require("child_process");
-const dotenv = require("dotenv");
-dotenv.config();
 
 /**
  * Gets the OpenAI API key from npm config
