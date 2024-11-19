@@ -1,0 +1,11 @@
+.git
+.github
+docs/
+test/
+examples/
+.gitignore
+.npmrc
+*.log
+*.test.js
+coverage/
+.env*
