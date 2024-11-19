@@ -125,6 +125,7 @@ async function handleCreateConfigFile() {
     localeContext: {},
     aiServiceProvider: "openAI",
     llmConfig: {},
+    parallelProcessing: true,
   };
   try {
     // Validate source directory
@@ -273,7 +274,13 @@ async function handleCreateConfigFile() {
       "\n✅ Config file created successfully: localizer-ai.config.json"
     );
     console.log(
-      "\n💡 You can now edit the llmConfig section in the config file to customize the LLM settings.\n Make sure to save the config file before running the translate command."
+      "\n💡 You can now edit the parallelProcessing section in the config file to customize the parallel processing settings."
+    );
+    console.log(
+      "\n💡 You can now edit the llmConfig section in the config file to customize the LLM settings."
+    );
+    console.log(
+      "\n💡 Make sure to save the config file before running the translate command."
     );
   } catch (error) {
     console.error("\n❌ Error creating config file:", error.message);

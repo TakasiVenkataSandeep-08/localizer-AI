@@ -1,6 +1,8 @@
 const OpenAI = require("openai");
 
 const { getApiKey } = require("../config/common");
+const { getValueFromConfig } = require("../utils/common");
+let llmConfig;
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -20,6 +22,9 @@ const askOpenAI = async ({ question, systemPrompt }) => {
   if (!question) {
     throw new Error("Question is required");
   }
+  if (!llmConfig) {
+    llmConfig = getValueFromConfig("llmConfig");
+  }
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -28,6 +33,7 @@ const askOpenAI = async ({ question, systemPrompt }) => {
       { role: "user", content: question },
     ],
     temperature: 0.4,
+    ...llmConfig,
   });
 
   return response.choices[0].message.content;

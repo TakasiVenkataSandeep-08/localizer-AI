@@ -3,8 +3,11 @@ const { translateCleaner } = require("./common.js");
 const { systemPrompt } = require("../constants/prompt.js");
 const { getValueFromConfig } = require("./common.js");
 const { AI_SERVICE_PROVIDERS } = require("../constants/config.js");
+const { queuedAskAI } = require("./aiQueue.js");
 
 let askAI;
+let aiServiceProvider;
+let parallelProcessing;
 
 /**
  * Translates the given content from one language to another using OpenAI's GPT-3 model.
@@ -22,8 +25,9 @@ async function translateText({ content, from, to, localeContext, fileType }) {
     }
 
     if (!askAI) {
-      const aiServiceProvider = getValueFromConfig("aiServiceProvider");
-
+      if (!aiServiceProvider) {
+        aiServiceProvider = getValueFromConfig("aiServiceProvider");
+      }
       if (aiServiceProvider === AI_SERVICE_PROVIDERS.MISTRALAI) {
         const { askMistralAI } = require("../ai/mistralAI.js");
         askAI = askMistralAI;
@@ -31,6 +35,10 @@ async function translateText({ content, from, to, localeContext, fileType }) {
         const { askOpenAI } = require("../ai/openAI.js");
         askAI = askOpenAI;
       }
+    }
+
+    if (!parallelProcessing) {
+      parallelProcessing = getValueFromConfig("parallelProcessing");
     }
 
     let context = "";
@@ -49,10 +57,34 @@ async function translateText({ content, from, to, localeContext, fileType }) {
 
     const { chunks, reconstruct } = createFormatTemplate(content, fileType);
 
-    const translatedChunks = await Promise.all(
-      chunks.map(async (chunk) => {
+    let translatedChunks;
+    if (parallelProcessing) {
+      // Parallel processing with rate limiting
+      translatedChunks = await Promise.all(
+        chunks.map(async (chunk) => {
+          try {
+            const response = await askAI({
+              question: `Text to translate:
+            """
+            ${chunk}
+            """`,
+              systemPrompt: updatedSystemPrompt,
+            });
+
+            // Apply the cleaner to the translated text
+            return translateCleaner(response || chunk, chunk, fileType);
+          } catch (error) {
+            console.error(`Translation chunk error: ${error.message}`);
+            return chunk;
+          }
+        })
+      );
+    } else {
+      // Series processing (already naturally rate-limited)
+      translatedChunks = [];
+      for (const chunk of chunks) {
         try {
-          const response = await askAI({
+          const response = await queuedAskAI(askAI, {
             question: `Text to translate:
             """
             ${chunk}
@@ -60,14 +92,15 @@ async function translateText({ content, from, to, localeContext, fileType }) {
             systemPrompt: updatedSystemPrompt,
           });
 
-          // Apply the cleaner to the translated text
-          return translateCleaner(response || chunk, chunk, fileType);
+          translatedChunks.push(
+            translateCleaner(response || chunk, chunk, fileType)
+          );
         } catch (error) {
           console.error(`Translation chunk error: ${error.message}`);
-          return chunk;
+          translatedChunks.push(chunk);
         }
-      })
-    );
+      }
+    }
 
     // Use the reconstruct method to maintain exact formatting
     return reconstruct(translatedChunks);

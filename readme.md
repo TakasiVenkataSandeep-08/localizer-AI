@@ -1,143 +1,365 @@
-# Content Localizer CLI
+# Content Localizer CLI Documentation
 
-[![NPM Version](https://img.shields.io/npm/v/content-localizer.svg)](https://www.npmjs.com/package/content-localizer)
+<div align="center">
+
+![Content Localizer CLI Logo](assets/logo.png)
+
+[![NPM Version](https://img.shields.io/npm/v/localizer-ai.svg)](https://www.npmjs.com/package/localizer-ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/content-localizer.svg)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/node/v/localizer-ai.svg)](https://nodejs.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-A powerful CLI tool for replicating and translating content across multiple locales. Perfect for projects requiring content localization, especially suited for VitePress and similar documentation frameworks.
+A powerful CLI tool for automating content localization using AI, perfect for VitePress and similar documentation frameworks.
+
+[Installation](#installation) •
+[Documentation](#documentation) •
+[Contributing](#contributing)
+
+</div>
+
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Quick Start](#quick-start)
+  - [Configuration](#configuration)
+  - [Translation Context](#translation-context)
+- [Architecture](#architecture)
+- [Advanced Features](#advanced-features)
+- [Contributing](#contributing)
+- [API Documentation](#api-documentation)
+- [Security](#security)
+- [Roadmap](#roadmap)
+- [License](#license)
+- [Support](#support)
 
 ## Features
 
-- 📁 Replicate directory structures for multiple locales
-- 🔄 Support for multiple file types (.md, .txt, etc.)
-- 🎯 Preserve original file structure and formatting
-- 🚀 Easy to use CLI interface
-- ⚡️ Fast and efficient processing
+- 🤖 AI-powered translations using OpenAI GPT-4 or MistralAI
+- 📁 Smart directory structure replication
+- 🔄 Support for multiple file types (.md, .txt, .json)
+- 🎯 Format preservation (markdown, special characters)
+- 🚀 Parallel processing with rate limiting
 - 📦 Perfect for VitePress projects
+- 🌍 Context-aware translations
+
+## Limitations
+
+> ⚠️ **Early Stage Project**: This tool is in its early stages of development.
+
+- **Markdown Formatting**: Some complex markdown structures may not be perfectly preserved during translation
+- **Text File Formatting**: Special formatting in .txt files might require manual review
+- **Work in Progress**: Active development is ongoing to improve formatting accuracy
+- **Rate limiting**: You might hit the rate limit of the AI service you are using when using a free account.
+
+These limitations are being actively addressed and will be improved in future versions. For best results, review translated output for critical content.
 
 ## Prerequisites
 
 - Node.js >= 16.0.0
-- npm or yarn package manager
+- npm or yarn
+- OpenAI API key or MistralAI API key
 
 ## Installation
 
 ```bash
 # Install globally
-npm install -g content-localizer
+npm install -g localizer-ai
+
+# Set up API key for OpenAI
+npm config set -g openai-key YOUR_API_KEY
+
+# Or set up API key for MistralAI
+npm config set -g mistralai-key YOUR_API_KEY
 ```
 
 ## Usage
 
-Basic command structure:
+### Quick Start
+
+1. Create a new configuration file:
 
 ```bash
-content-localizer --source [sourcePath] --locales [locale1,locale2] --fileTypes [fileType1,fileType2] --from [fromLocale]
+localizer-ai create-config
 ```
 
-### Required Options
-
-- `--source`: Path to the source directory
-- `--locales`: Comma-separated list of target locales (e.g., 'no,sw')
-- `--fileTypes`: Comma-separated list of file extensions (e.g., '.md,.txt')
-
-### Optional Options
-
-- `--from`: Source locale type (defaults to 'en')
-
-### Example
+2. Start the translation process:
 
 ```bash
-content-localizer --source src/en --locales no,sw --fileTypes .md,.txt --from en
+localizer-ai translate
 ```
 
-## Directory Structure Example
+### Configuration
 
-Source structure:
+Create a `localizer-ai.config.json` file:
 
-```
-en/
-├── introduction.md
-├── getting-started/
-├── installation/
-│   └── installation.txt
-├── usage/
-│   └── usage.md
-└── settings/
-    └── settings.md
-```
-
-After running the tool, it creates identical structures for each locale:
-
-Norwegian (no):
-
-```
-no/
-├── introduction.md
-├── getting-started/
-├── installation/
-│   └── installation.txt
-├── usage/
-│   └── usage.md
-└── settings/
-    └── settings.md
+```json
+{
+  "source": "docs/en",
+  "fileTypes": [".md", ".txt"],
+  "locales": ["fr", "es", "de"],
+  "from": "en",
+  "destination": "localized",
+  "aiServiceProvider": "openAI",
+  "parallelProcessing": true,
+  "llmConfig": {
+    "temperature": 0.4,
+    "maxTokens": 1000
+  }
+}
 ```
 
-Swahili (sw):
+#### Configuration Options
 
+| Option               | Description                | Default        |
+| -------------------- | -------------------------- | -------------- |
+| `source`             | Source directory path      | Required       |
+| `fileTypes`          | Array of file extensions   | Required       |
+| `locales`            | Target language codes      | Required       |
+| `from`               | Source language code       | "en"           |
+| `destination`        | Output directory           | Same as source |
+| `aiServiceProvider`  | AI service to use          | "openAI"       |
+| `parallelProcessing` | Enable parallel processing | true           |
+| `llmConfig`          | AI model configuration     | {}             |
+
+### Translation Context
+
+#### File-level Context
+
+```json
+{
+  "docs/api.md": "Technical API documentation",
+  "docs/guide.md": "User guide content"
+}
 ```
-sw/
-├── introduction.md
-├── getting-started/
-├── installation/
-│   └── installation.txt
-├── usage/
-│   └── usage.md
-└── settings/
-    └── settings.md
+
+#### Deep Context (JSON files)
+
+```json
+{
+  "docs/config.json": {
+    "api.endpoints": "API endpoint descriptions",
+    "$fileContext": "Configuration documentation"
+  }
+}
 ```
 
-## Use Cases
+## Architecture
 
-### VitePress Documentation
+### Core Components
 
-Perfect for setting up multi-language documentation:
+1. **CLI Interface** (`src/cli/commandExecutor.js`)
 
-1. Organize your English content in `src/en`
-2. Run content-localizer to create locale-specific directories
-3. Translate content for each locale
-4. Configure VitePress to use the generated structure
+```javascript
+async function commandExecutor() {
+  displayWelcomeMessage();
+  const args = process.argv.slice(2);
+  // ... command handling logic
+}
+```
 
-### General Website Localization
+2. **Translation Engine** (`src/utils/textTranslator.js`)
 
-Easily create locale-specific content structures for any web project:
+```javascript
+async function translateText({ content, from, to, localeContext, fileType }) {
+  // ... translation logic
+}
+```
 
-1. Store your source content in a primary locale directory
-2. Use content-localizer to replicate the structure
-3. Translate content while maintaining the same organization
+3. **File Processing** (`src/utils/fileReplicator.js`)
 
-## Common Workflows
+```javascript
+async function replicateFiles(
+  sourcePath,
+  locales,
+  fileTypes,
+  from,
+  destinationPath
+) {
+  // ... file replication logic
+}
+```
 
-1. **Initial Setup**
+### AI Integration
 
-   ```bash
-   content-localizer --source docs/en --locales fr,es,de --fileTypes .md
-   ```
+#### OpenAI Implementation
 
-2. **Adding New Languages**
-   ```bash
-   content-localizer --source docs/en --locales it,pt --fileTypes .md,.txt
-   ```
+```javascript
+const askOpenAI = async ({ question, systemPrompt }) => {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: question },
+    ],
+    temperature: 0.4,
+    ...llmConfig,
+  });
+  return response.choices[0].message.content;
+};
+```
+
+#### MistralAI Implementation
+
+```javascript
+const askMistralAI = async ({ question, systemPrompt }) => {
+  const chatResponse = await client.chat.complete({
+    model: "open-mistral-nemo",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: question },
+    ],
+    ...llmConfig,
+  });
+  return chatResponse.choices[0].message.content;
+};
+```
+
+## Advanced Features
+
+### Format Preservation
+
+The tool maintains formatting for:
+
+#### Markdown
+
+- Headers (h1-h6)
+- Code blocks with language specification
+- Lists (ordered and unordered)
+- Links and images
+- Bold and italic text
+- Task lists
+- Tables
+
+#### JSON
+
+- Nested structure preservation
+- Type consistency
+- Formatting maintenance
+
+### Rate Limiting
+
+```javascript
+class AIRequestQueue {
+  constructor(delayMs = 1500) {
+    this.queue = [];
+    this.isProcessing = false;
+    this.delayMs = delayMs;
+  }
+
+  async processQueue() {
+    // ... queue processing logic with rate limiting
+  }
+}
+```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create your feature branch:
+
+```bash
+git checkout -b feature/AmazingFeature
+```
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+
+4. Run in development mode:
+
+```bash
+npm run dev
+```
+
+5. Commit your changes:
+
+```bash
+git commit -m 'Add some AmazingFeature'
+```
+
+6. Push to the branch:
+
+```bash
+git push origin feature/AmazingFeature
+```
+
+7. Open a Pull Request
+
+### Development Guidelines
+
+1. **Code Style**
+
+- Use ESLint configuration
+- Follow JSDoc documentation standards
+- Maintain test coverage
+
+2. **Commit Messages**
+
+- Use conventional commits format
+- Include issue references
+
+3. **Testing**
+
+```bash
+npm test
+```
+
+## API Documentation
+
+### Core Functions
+
+#### translateText
+
+```javascript
+/**
+ * Translates content from one language to another
+ * @param {Object} options Translation options
+ * @param {string} options.content Content to translate
+ * @param {string} options.from Source language
+ * @param {string} options.to Target language
+ * @returns {Promise<string>} Translated content
+ */
+async function translateText(options) {
+  // Implementation
+}
+```
+
+#### replicateFiles
+
+```javascript
+/**
+ * Replicates directory structure with translations
+ * @param {string} sourcePath Source directory
+ * @param {string[]} locales Target locales
+ * @param {string[]} fileTypes File types to process
+ * @returns {Promise<void>}
+ */
+async function replicateFiles(sourcePath, locales, fileTypes) {
+  // Implementation
+}
+```
+
+## Security
+
+- API keys stored securely using npm config
+- Rate limiting for API calls
+- Input validation for file operations
+- Safe file system operations
+
+## Roadmap
+
+- [ ] Add support for more AI providers
+- [ ] Implement translation memory
+- [ ] Add custom translation rules
+- [ ] Support for more file formats
+- [ ] Batch processing optimization
+- [ ] Auto language detection
+- [ ] Translation quality metrics
 
 ## License
 
@@ -145,14 +367,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- Create an issue for bug reports or feature requests
-- Star the project if you find it useful
-- Follow the author for updates
+- Create an [issue](https://github.com/TakasiVenkataSandeep-08/localizer-AI/issues)
+- Star the project
+- Follow updates
 
-## Author
+## Credits
 
-Takasi Venkata Sandeep
+Created by [Takasi Venkata Sandeep](https://github.com/TakasiVenkataSandeep-08)
 
-## Repository
+## Related Projects
 
-[GitHub Repository](https://github.com/TakasiVenkataSandeep-08/content-localizer)
+- [VitePress](https://vitepress.dev/)
+- [OpenAI GPT-4](https://openai.com/gpt-4)
+- [MistralAI](https://mistral.ai/)

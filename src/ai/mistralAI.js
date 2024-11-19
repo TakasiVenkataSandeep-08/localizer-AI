@@ -1,9 +1,11 @@
 const { getApiKey } = require("../config/common");
 const { Mistral } = require("@mistralai/mistralai");
+const { getValueFromConfig } = require("../utils/common");
 
 const apiKey = getApiKey("mistralai-key");
 
 const client = new Mistral({ apiKey: apiKey });
+let llmConfig;
 
 /**
  * Sends a question to the Mistral AI model and returns its response
@@ -16,6 +18,9 @@ const askMistralAI = async ({ question, systemPrompt }) => {
   if (!question) {
     throw new Error("Question is required");
   }
+  if (!llmConfig) {
+    llmConfig = getValueFromConfig("llmConfig");
+  }
 
   const chatResponse = await client.chat.complete({
     model: "open-mistral-nemo",
@@ -23,6 +28,7 @@ const askMistralAI = async ({ question, systemPrompt }) => {
       { role: "system", content: systemPrompt },
       { role: "user", content: question },
     ],
+    ...llmConfig,
   });
 
   return chatResponse.choices[0].message.content;
