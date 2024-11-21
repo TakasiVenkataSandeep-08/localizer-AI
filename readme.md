@@ -9,7 +9,7 @@
 [![Node.js Version](https://img.shields.io/node/v/localizer-ai.svg)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-A powerful CLI tool for automating content localization using AI, perfect for VitePress and similar documentation frameworks.
+A powerful CLI tool for automating content localization using OpenAI GPT-4 or MistralAI, helping to localize apps. Supports multiple file types, preserves formatting, and enables context-aware translations.
 
 [Installation](#installation) •
 [Documentation](#documentation) •
@@ -44,6 +44,37 @@ A powerful CLI tool for automating content localization using AI, perfect for Vi
 - 🚀 Parallel processing with rate limiting
 - 📦 Perfect for VitePress projects
 - 🌍 Context-aware translations
+
+## Why Choose Content Localizer AI CLI?
+
+### Advantages Over Traditional LLM Solutions
+
+1. **Format-Aware Translation**
+
+   - Intelligently preserves complex Markdown structures
+   - Maintains JSON/JavaScript object hierarchies
+
+2. **Smart Context Management**
+
+   - File-level context support for accurate translations
+   - Deep context for nested JSON structures
+
+3. **Developer-Centric Features**
+
+   - Native support for VitePress and documentation frameworks
+   - Built-in parallel processing with rate limiting
+
+4. **Project Structure Preservation**
+
+   - Maintains source directory hierarchy
+   - Handles multiple file types in single pass
+
+5. **Developer Experience**
+
+   - Simple CLI interface
+   - Minimal configuration needed
+
+This tool combines the power of LLMs with specialized handling for development-focused content, making it superior to generic translation services or basic LLM implementations for technical documentation and code-related content.
 
 ## Limitations
 
@@ -123,6 +154,11 @@ Create a `localizer-ai.config.json` file:
 | `aiServiceProvider`  | AI service to use          | "openAI"       |
 | `parallelProcessing` | Enable parallel processing | true           |
 | `llmConfig`          | AI model configuration     | {}             |
+
+> **Note on Default Models:**
+>
+> - OpenAI: Uses `gpt-4o-mini` model by default
+> - MistralAI: Uses `open-mistral-nemo` model by default
 
 ### Translation Context
 
